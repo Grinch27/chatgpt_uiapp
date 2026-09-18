@@ -1,0 +1,30 @@
+# 待确认：Docker 实测；歧义：仅本机访问；后续：独立批准 ChatGPT 接入。
+# 优化：无持久卷；风险：禁止改为公网端口绑定；验证重点：回环访问与容器健康。
+name: chatgpt-uiapp
+services:
+  decision-block:
+    build:
+      context: .
+      target: runtime
+    image: chatgpt-uiapp:local
+    ports:
+      - "127.0.0.1:${LOCAL_PORT:-3001}:3001"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3001"
+      NODE_ENV: production
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: 1.0
+    logging:
+      driver: local
+      options:
+        max-size: "5m"
+        max-file: "2"

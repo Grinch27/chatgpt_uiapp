@@ -1,5 +1,5 @@
-// 待确认：外部 host 兼容性；歧义：无；后续：经批准后接入 ChatGPT。
-// 优化：保持无状态；风险：禁止直接公网部署；验证：MCP、非法输入、端口冲突。
+// 待确认：Docker 实测与外部 host 兼容性；歧义：仅本机访问；后续：经批准后接入 ChatGPT。
+// 优化：保持无状态；风险：容器须仅发布宿主机回环端口；验证：HOST、MCP、非法输入、端口冲突。
 import express from 'express';
 import { readFileSync } from 'node:fs';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -54,7 +54,9 @@ app.use((_error: unknown, _req: express.Request, res: express.Response, _next: e
 });
 const port = Number(process.env.PORT ?? 3001);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT must be 1..65535');
-const listener = app.listen(port, '127.0.0.1', () => console.log(`Decision Block: http://127.0.0.1:${port}/mcp`));
+const host = process.env.HOST ?? '127.0.0.1';
+if (!['127.0.0.1', '0.0.0.0'].includes(host)) throw new Error('HOST must be 127.0.0.1 or 0.0.0.0');
+const listener = app.listen(port, host, () => console.log(`Decision Block listening on ${host}:${port} (/mcp)`));
 listener.on('error', (error: NodeJS.ErrnoException) => {
   console.error(error.code === 'EADDRINUSE' ? `Port ${port} is already in use` : `Server failed: ${error.code ?? 'unknown'}`);
   process.exitCode = 1;

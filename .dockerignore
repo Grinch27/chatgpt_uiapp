@@ -1,0 +1,9 @@
+# Only application build inputs enter the Docker context.
+**
+!Dockerfile
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!build.mjs
+!src/
+!src/**
